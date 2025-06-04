@@ -6,7 +6,7 @@ def main():
     args = parse_args()
     print("Loading resources...")
     # Load Errant
-    annotator = errant.load("en")
+    annotator = errant.load("gu") #GUJ
 
     print("Processing M2 file...")
     # Open the m2 file and split it into text+edits blocks. Also open out_m2.
