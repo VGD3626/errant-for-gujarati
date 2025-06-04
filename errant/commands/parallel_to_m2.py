@@ -12,8 +12,9 @@ def main():
     print("Processing parallel files...")
     # Process an arbitrary number of files line by line simultaneously. Python 3.3+
     # See https://tinyurl.com/y4cj4gth . Also opens the output m2 file.
-    with ExitStack() as stack, open(args.out, "w") as out_m2:
-        in_files = [stack.enter_context(open(i)) for i in [args.orig]+args.cor]
+    with ExitStack() as stack, open(args.out, "w", encoding="utf-8") as out_m2: #GUJ
+        in_files = [stack.enter_context(open(i, encoding="utf-8")) for i in [args.orig] + args.cor] #GUJ
+
         # Process each line of all input files
         for line in zip(*in_files):
             # Get the original and all the corrected texts
