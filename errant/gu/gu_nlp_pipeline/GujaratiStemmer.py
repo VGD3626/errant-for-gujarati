@@ -120,7 +120,7 @@ class Stemmer():
 			print("{} not present in prefixes".format(prefix))
 
 
-	def stem_word(self, sentence, corpus):
+	def stem_word(self, sentence):
 		word_list = sentence.strip('\u200b').split(' ')
 		if not word_list[-1]:
 			del(word_list[-1])
