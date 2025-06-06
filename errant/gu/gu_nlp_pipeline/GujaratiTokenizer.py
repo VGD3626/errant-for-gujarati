@@ -4,6 +4,25 @@ from spacy.tokens import Doc, Token
 
 stopwords = []
 
+def GujaratiTokenizer(data, keep_stopwords = True):
+        
+        data = re.sub(r'([.,\'\\"!?%#@*<>|\+\-\(\)])', r' \1 ', data)
+        data = re.sub(r"   ", '', data)
+        data = re.sub(r'…', " ", data)
+        data = re.split(r'[ -]',data)
+        words = []
+        
+        if not keep_stopwords:
+            for word in data:
+                if word not in stopwords:
+                    words.append(word)
+            return words
+
+        for i in data:
+            if i:
+                words.append(i)
+        return words
+
 def gujarati_tokenizer(nlp):
 
     #changes are needed
