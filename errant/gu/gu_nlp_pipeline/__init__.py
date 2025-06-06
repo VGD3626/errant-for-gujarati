@@ -1,10 +1,16 @@
 from errant.gu.gu_nlp_pipeline.GujaratiTokenizer import gujarati_tokenizer
 from errant.gu.gu_nlp_pipeline.GujaratiStemmer import Stemmer
-from errant.gu.gu_nlp_pipeline.GujaratiTagger import Tagger
-
+from errant.gu.gu_nlp_pipeline.GujaratiMorphAnalyzer.GujaratiAnalyzer import gujarati_analyzer
 import spacy
 from spacy.language import Language
+from spacy.tokens import Token
 
+Token.set_extension("gender", default="NA", force=True)
+Token.set_extension("number", default="NA", force=True)
+Token.set_extension("person", default="NA", force=True)
+Token.set_extension("tense", default="NA", force=True)
+Token.set_extension("case", default="NA", force=True)
+Token.set_extension("aspect", default="NA", force=True)
 
 @Language.component("GujaratiStemmer")
 def GujStemmer(doc):
@@ -14,17 +20,23 @@ def GujStemmer(doc):
         token.lemma_ = lemma
     return doc
 
-@Language.component("GujaratiTagger")
-def GujTagger(doc):
-    gtagger = Tagger()
-    tags = gtagger.tag(str(doc))
-    for token, tag in zip(doc, tags):
-        token.tag_ = tag#tag[1]
+@Language.component("GujaratiMorphAnalyzer")
+def GujAnalyzer(doc):
+    gtagger = gujarati_analyzer(str(doc))
+    features = gtagger.tag(str(doc))
+    for token, feats in zip(doc, features):
+        token.tag_ = feats.pos
+        token._.gender = feats.gender   
+        token._.number = feats.number
+        token._.person = feats.person
+        token._.tense = feats.tense
+        token._.case = feats.case
+        token._.aspect = feats.aspect
     return doc
 
 nlp_gu = Language()
 nlp_gu.tokenizer = gujarati_tokenizer(nlp_gu)
 nlp_gu.add_pipe("GujaratiStemmer", "stemmer")
-nlp_gu.add_pipe("GujaratiTagger", "tagger")
+nlp_gu.add_pipe("GujaratiMorphAnalyzer", "analyzer")
 
 print(nlp_gu("1 . બાળકો ક્રિકેટનો ખેલ રમી રહ્યા છે"))

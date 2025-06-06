@@ -1,0 +1,26 @@
+{
+  "pos": [
+    "NA", "DM_DMI", "CC_CCD", "PSP", "PR_PRQ", "RP_RPD", "PR_PRP", "DM_DMQ", "RB", "QT_QTO", "JJ", "RD_ECH", "PR_PRF", "N_NNP", "N_NN", "RP_CL", "V_VM", "DM_DMD", "RP_INTF", "QT_QTC", "RP_INJ", "PR_PRC", "V_VAUX_VNP", "RD_PUNC", "PR_PRI", "PR_PRL", "DM_DMR", "CC_CCS_UT", "RD_RDF", "N_NST", "RP_NEG", "RD_SYM", "V_VAUX", "QT_QTF", "CC_CCS", "Value"
+  ],
+  "gender": [
+    "NA", "MASC", "FEM", "NEUT"
+  ],
+  "number": [
+    "NA", "SG", "PL"
+  ],
+  "type": [
+    "NA", "LGSPEC02", "LGSPEC01", "LGSPEC03"
+  ],
+  "person": [
+    "NA", "1", "2", "3"
+  ],
+  "tense": [
+    "NA", "PST", "FUT"
+  ],
+  "case": [
+    "NA", "ERG", "GEN", "NOM", "DAT", "LOC", "ABL"
+  ],
+  "aspect": [
+    "NA", "NFIN"
+  ]
+}

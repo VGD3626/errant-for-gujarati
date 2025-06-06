@@ -29,11 +29,6 @@ pos_map = load_pos_map(base_dir/"resources"/"pos_mapping.json")
 # Input: An Edit object
 # Output: The same Edit object with an updated error type
 def classify(edit):
-    # if not edit.o_toks and not edit.c_toks:
-    #     edit.type = "UNK"
-    # else:
-    #     edit.type = "VRU"
-    
     # Nothing to nothing is a detected but not corrected edit
     if not edit.o_toks and not edit.c_toks:
         edit.type = "UNK"
@@ -54,17 +49,23 @@ def classify(edit):
         if edit.o_str == edit.c_str:
             edit.type = "UNK"
 
-            # Replacement
+        # Replacement
         else:
             op = "R:"
             cat = get_two_sided_type(edit.o_toks, edit.c_toks)
             edit.type = op+cat
 
     return edit
-
     
+def get_edit_info(toks):
+    pos = []
+    for tok in toks:
+        pos.append(pos_map[tok.tag_])
+    return pos
+
 
 def get_one_sided_type(e):
+    
     return "VRU"
 
 def get_two_sided_type(e,g):
