@@ -22,17 +22,18 @@ def GujStemmer(doc):
 
 @Language.component("GujaratiMorphAnalyzer")
 def GujAnalyzer(doc):
-    gtagger = gujarati_analyzer(str(doc))
-    features = gtagger.tag(str(doc))
+    features = gujarati_analyzer(str(doc))
     for token, feats in zip(doc, features):
-        token.tag_ = feats.pos
-        token._.gender = feats.gender   
-        token._.number = feats.number
-        token._.person = feats.person
-        token._.tense = feats.tense
-        token._.case = feats.case
-        token._.aspect = feats.aspect
+        token.tag_ = feats.get("pos", "NA")
+        token._.gender = feats.get("gender", "NA")
+        token._.number = feats.get("number", "NA")
+        token._.person = feats.get("person", "NA")
+        token._.tense = feats.get("tense", "NA")
+        token._.case = feats.get("case", "NA")
+        token._.aspect = feats.get("aspect", "NA")
+    print(features)
     return doc
+
 
 nlp_gu = Language()
 nlp_gu.tokenizer = gujarati_tokenizer(nlp_gu)

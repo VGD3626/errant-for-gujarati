@@ -4,6 +4,7 @@ import torch
 from transformers import AutoTokenizer
 import torch.nn.functional as F
 from pathlib import Path
+from errant.gu.gu_nlp_pipeline.GujaratiTokenizer import GujaratiTokenizer
 
 def load_feature_values(path, encoding="utf-8"):
     with open(path) as mappings:
@@ -36,6 +37,17 @@ for key,values in feature_values.items():
   total_number_of_features+=len(values)
 number_of_labels=total_number_of_features
 
+class PosMorphClassificationModel(nn.Module):
+    def __init__(self, custom_model, feature_seq):
+        super(PosMorphClassificationModel, self).__init__()
+        self.custom_model = custom_model
+
+    def forward(self, input_ids, attention_mask):
+        return self.custom_model(
+              input_ids,
+              attention_mask=attention_mask
+        )
+
 class CustomTokenClassificationModel(nn.Module):
     def __init__(self, bert_model, feature_seq):
         super(CustomTokenClassificationModel, self).__init__()
@@ -63,17 +75,6 @@ class CustomTokenClassificationModel(nn.Module):
         # 3) Return the list of all feature‐head logits
         return logits_list
 
-class PosMorphClassificationModel(nn.Module):
-    def __init__(self, custom_model, feature_seq):
-        super(PosMorphClassificationModel, self).__init__()
-        self.custom_model = custom_model
-
-    def forward(self, input_ids, attention_mask):
-        return self.custom_model(
-              input_ids,
-              attention_mask=attention_mask
-        )
-
 class MorphAnalysis:
     def __init__(self, tokenizer, inference_model, feature_seq, feature_id2value, max_length,NA):
         self.tokenizer = tokenizer
@@ -97,7 +98,7 @@ class MorphAnalysis:
 
     def tokenize_sentence(self, sentence, splitted=False):
         if not splitted:
-            tokens = sentence.split(' ')
+            tokens = GujaratiTokenizer(sentence)
         else:
             tokens = sentence
 
@@ -118,17 +119,22 @@ class MorphAnalysis:
         return sample
 
     def prepare_output(self, sample):
-        tokens = sample['tokens']
-        output = []
+      tokens = sample['tokens']
+      output = []
 
-        for i, token in enumerate(tokens):
+      for i, token in enumerate(tokens):
           features = {}
           for feat in self.feature_seq:
-            feat_val = sample[feat][i]
-            if feat_val != self.NA:
-              features[feat] = feat_val
-          output.append((token, features))
-        return output
+              # Safe access with default 'NA'
+              feat_vals = sample.get(feat, [])
+              feat_val = feat_vals[i] if i < len(feat_vals) else self.NA
+
+              # Only add if not NA
+              if feat_val != self.NA:
+                  features[feat] = feat_val
+          output.append(features)
+      return output
+
 
     def infer(self, sentence):
         batch = self.tokenize_sentence(sentence)

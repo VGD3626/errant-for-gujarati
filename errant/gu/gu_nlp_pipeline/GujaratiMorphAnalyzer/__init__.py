@@ -1,10 +1,15 @@
 import json 
 import torch.nn as nn
 import torch
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForTokenClassification
 import torch.nn.functional as F
 from pathlib import Path
-from .ModelClasses import MorphAnalysis, PosMorphClassificationModel, CustomTokenClassificationModel
+from .ModelClasses import MorphAnalysis, CustomTokenClassificationModel, PosMorphClassificationModel
+import sys
+
+sys.modules["__main__"].PosMorphClassificationModel = PosMorphClassificationModel
+sys.modules["__main__"].CustomTokenClassificationModel = CustomTokenClassificationModel
+
 
 def load_feature_values(path, encoding="utf-8"):
     with open(path) as mappings:
@@ -37,12 +42,17 @@ for key,values in feature_values.items():
   total_number_of_features+=len(values)
 number_of_labels=total_number_of_features
 
+base_model = CustomTokenClassificationModel(
+    bert_model=AutoModelForTokenClassification.from_pretrained("l3cube-pune/gujarati-bert"),
+    feature_seq=feature_seq
+)
+inference_model = PosMorphClassificationModel(base_model, feature_seq)
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 inference_checkpoint = "/content/drive/MyDrive/NLP Gujarati POS & Morph Analysis/POS_MORPH_MODEL/trained_model_binary_file/GUJ_POS_MORPH_ANAYLISIS_WRAPPER-v6.0-model.pth"
 inference_model=torch.load(inference_checkpoint, map_location=device, weights_only=False)
 inference_model.eval()
 inference_model.to(device)
 tokenizer = AutoTokenizer.from_pretrained("l3cube-pune/gujarati-bert")
-
 model = MorphAnalysis(tokenizer, inference_model, feature_seq, feature_id2value, MAX_LENGTH,NA)
 
