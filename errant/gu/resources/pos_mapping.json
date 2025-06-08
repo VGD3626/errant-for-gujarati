@@ -1,7 +1,7 @@
  {
-  "CC_CCD": "CCONJ",
-  "CC_CCS": "SCONJ",
-  "CC_CCS_UT": "SCONJ",
+  "CC_CCD": "CONJ",
+  "CC_CCS": "CONJ",
+  "CC_CCS_UT": "CONJ",
   "DM_DMD": "DET",
   "DM_DMI": "DET",
   "DM_DMQ": "DET",

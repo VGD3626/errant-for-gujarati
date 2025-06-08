@@ -25,6 +25,11 @@ vocab = load_word_list(base_dir/"resources"/"hunspell-gu-dict.txt")
 #POS mappings
 pos_map = load_pos_map(base_dir/"resources"/"pos_mapping.json")
 
+# Common POS tags
+coarse_pos = {"ADJ", "ADV", "NOUN", "VERB", "ADP", "PRON", "AUX"}
+
+# Rare POS tags that make uninformative error categories
+rare_pos = {"INTJ", "NUM", "SYM", "X"}
 
 # Input: An Edit object
 # Output: The same Edit object with an updated error type
@@ -58,15 +63,25 @@ def classify(edit):
     return edit
     
 def get_edit_info(toks):
-    pos = []
+    feat = []
     for tok in toks:
-        pos.append(pos_map[tok.tag_])
-    return pos
+        feat.append(tok._.feat)
+    return feat
 
 
-def get_one_sided_type(e):
+def get_one_sided_type(toks):
+    feat_list = get_edit_info(toks)
+    pos_list = [pos_map[f.get("pos")] for f in feat_list]
+
+    if len(pos_list) == 1 and pos_list[0] not in rare_pos:
+        return pos_list[0]
     
-    return "VRU"
+    # infinitives and phrasal verbs
+    if set(pos_list) == {"PART", "VERB"}:
+        return "VERB"
+    # Tricky cases
+    else:
+        return "OTHER"
 
 def get_two_sided_type(e,g):
-    return "ND"
+    return "VRU"
