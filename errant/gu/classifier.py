@@ -71,7 +71,10 @@ def get_edit_info(toks):
 
 def get_one_sided_type(toks):
     feat_list = get_edit_info(toks)
-    pos_list = [pos_map[f.get("pos")] for f in feat_list]
+    print(feat_list)
+    # if not feat_list:
+    pos_list = []
+    pos_list = [pos_map[f.get("pos", "NA")] for f in feat_list]
 
     if len(pos_list) == 1 and pos_list[0] not in rare_pos:
         return pos_list[0]

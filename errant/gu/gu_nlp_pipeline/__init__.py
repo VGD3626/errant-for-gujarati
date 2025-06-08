@@ -5,7 +5,7 @@ import spacy
 from spacy.language import Language
 from spacy.tokens import Token
 
-Token.set_extension("feat", default="NA", force=True)
+Token.set_extension("feat", default={}, force=True)
 # Token.set_extension("number", default="NA", force=True)
 # Token.set_extension("person", default="NA", force=True)
 # Token.set_extension("tense", default="NA", force=True)
@@ -24,7 +24,7 @@ def GujStemmer(doc):
 def GujAnalyzer(doc):
     features = gujarati_analyzer(str(doc))
     for token, feats in zip(doc, features):
-        token._.feat = feats[1]
+        token._.feat = feats
     print(features)
     return doc
 
