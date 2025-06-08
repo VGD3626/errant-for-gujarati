@@ -23,13 +23,13 @@ def GujAnalyzer(doc):
     features = gujarati_analyzer(str(doc))
     for token, feats in zip(doc, features):
         token._.feat = feats
-    print(features)
+    # print(features)
     return doc
 
 
 nlp_gu = Language()
 nlp_gu.tokenizer = gujarati_tokenizer(nlp_gu)
-nlp_gu.add_pipe("GujaratiLemmatizer", "lemmatizer")
 nlp_gu.add_pipe("GujaratiMorphAnalyzer", "analyzer")
+nlp_gu.add_pipe("GujaratiLemmatizer", "lemmatizer", after="analyzer")
 
 print(nlp_gu("1 . બાળકો ક્રિકેટનો ખેલ રમી રહ્યા છે"))

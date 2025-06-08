@@ -21,20 +21,20 @@ pronoun_mapping = {"હું": "હું", "મને": "હું", "મુ�
 }
 
 aux_suffixes = {
-    'તો','તું','તાં','તા','તી','શો', 'ોઈશ', 'ોઈશું','શે','ે', 'ું', 'ીએ', 'ો'
+    'તો','તું', 'તુ', 'તાં','તા','તી','શો', 'ોઈશ', 'ોઈશું', 'ોઈશુ', 'શે','ે', 'ું', 'ં', 'ીએ', 'ો'
 }
 
 noun_and_adj_suffixes = {
-    'નાં','ના','ની','નો','નું','ને','થી','માં','એ','ઓ','માંથી','સ્વી', 'ી',  'ે', 'ા', 'ો', 'ું',
+    'નાં','ના','ની','નો','નું','ને','થી', 'મા', 'માં','એ','ઓ','માંથી','સ્વી', 'ી', 'ં', 'ે', 'ા', 'ો', 'ું',
 }
 
 verb_suffixes = {
-    'તા','તી','તો','તું','તાં', 'શો', 'શે', 'શ', 'ેલ', 'ેલો', 'ેલા', 'ેલું', 'ેલી', 
+    'તા','તી','તો','તું','તાં', 'શો', 'શે', 'શ', 'ેલાં', 'ેલ', 'ેલો', 'ેલા', 'ેલું', 'ં','ેલી', 
     '્યા','યા','્યાં','્યો','યો','યાં','્યું','યું', 'વું','વુ'
 }
 
 def load_lemma_dict(path, encoding="utf-8"):
-    with open(path, encoding) as mappings:
+    with open(path, encoding="utf-8") as mappings:
         mapping_dict = json.load(mappings)        
     return mapping_dict
 
@@ -44,14 +44,14 @@ lemma_dict = load_lemma_dict(base_dir/"lemma_dict.json")
 
 
 def word_lemmatization(token):
-    word,pos = token.text, token._.feat.pos
+    word,pos = token.text, token._.feat.get("pos", "NA")
 
     #Pronoun
     if pos.startswith("PR_") and word in pronoun_mapping:
         return pronoun_mapping[word]
 
     #Noun and Adj (Both can have similar suffixes)
-    if pos.startswith("N_") or pos.sartswith("JJ"):
+    if pos.startswith("N_") or pos.startswith("JJ"):
         for suffix in sorted(noun_and_adj_suffixes, key=len, reverse=True): #largest suffix first
             if word.endswith(suffix):
                 return word[:-len(suffix)]

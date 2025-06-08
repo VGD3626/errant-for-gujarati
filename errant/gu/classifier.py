@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 from errant.gu.gu_nlp_pipeline import nlp_gu
-from rapidfuzz.distance import Levenshtein
+import Levenshtein
 
 # Load Hunspell word list for Gujarati
 def load_word_list(path):
@@ -100,7 +100,17 @@ def get_two_sided_type(o_toks,c_toks):
     # Word Order; only matches exact reordering.
     if is_exact_reordering(o_toks, c_toks):
         return "WO"
-    
+
+    # MORPHOLOGY
+    # Only ADJ, ADV, NOUN and VERB can have inflectional changes.
+    # lemma_ratio = Levenshtein.ratio(o_tok.lemma, c_tok.lemma)
+    # if (lemma_ratio >= .85) 
+    if o_toks[0].lemma == c_toks[0].lemma and \
+        o_toks[0]._.feat.get("pos", "NA") in coarse_pos and \
+        c_toks[0]._.feat.get("pos", "NA") in coarse_pos:
+        print(o_toks[0].lemma_, c_toks[0].lemma_)      
+        return "VRU" 
+
     # Spelling (A case of 1:1 replacement)
     if len(o_toks) == len(c_toks) == 1:
         o_tok = o_toks[0]
@@ -116,31 +126,17 @@ def get_two_sided_type(o_toks,c_toks):
             # Ratio > 0.5 means both correction and input share at least half the same chars.
             # WARNING: THIS IS AN APPROXIMATION.
             if char_ratio > 0.5 or char_dist == 1:
-                cat = "SPELL"
-                
+              cat = "SPELL"
+              if mismatched_are_matras_only(o_tok.text, o_tok.text):
+                cat += ":MATRA"
+                return cat
+              if mismatched_is_anusvara_only(o_tok.text, o_tok.text):
+                cat += ":ANUSVARA"
+                return cat
             # If ratio is <= 0.5, the error is more complex e.g. tolk -> say
             else:
                 return "OTHER"
             
-        if mismatched_are_matras_only(o_tok.text, o_tok.text):
-            cat += ":MATRA"
-            return cat
-        if mismatched_is_anusvara_only(o_tok.text, o_tok.text):
-            cat += ":ANUSVARA"
-            return cat
-        return cat
-            
-
-    # 2. MORPHOLOGY
-    # Only ADJ, ADV, NOUN and VERB can have inflectional changes.
-    # lemma_ratio = Levenshtein.ratio(o_tok.lemma, c_tok.lemma)
-    # if (lemma_ratio >= .85) 
-    if o_toks[0].lemma == c_toks[0].lemma and \
-        o_toks[0]._.feat.get("pos", "NA") in coarse_pos and \
-        c_toks[0]._.feat.get("pos", "NA") in coarse_pos:
-        
-        print(o_tok[0].lemma)
-        return "VRU" 
 
     o_feat = get_edit_info(o_toks)
     c_feat = get_edit_info(c_toks)
