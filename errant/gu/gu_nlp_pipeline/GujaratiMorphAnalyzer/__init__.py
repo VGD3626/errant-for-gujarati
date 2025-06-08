@@ -1,8 +1,6 @@
 import json 
-import torch.nn as nn
 import torch
 from transformers import AutoTokenizer, AutoModelForTokenClassification
-import torch.nn.functional as F
 from pathlib import Path
 from .ModelClasses import MorphAnalysis, CustomTokenClassificationModel, PosMorphClassificationModel
 import sys

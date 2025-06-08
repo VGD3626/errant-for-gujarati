@@ -1,7 +1,6 @@
 import json 
 import torch.nn as nn
 import torch
-from transformers import AutoTokenizer
 import torch.nn.functional as F
 from pathlib import Path
 from errant.gu.gu_nlp_pipeline.GujaratiTokenizer import GujaratiTokenizer

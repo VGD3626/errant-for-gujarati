@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 from errant.gu.gu_nlp_pipeline import nlp_gu
+from rapidfuzz.distance import Levenshtein
 
 # Load Hunspell word list for Gujarati
 def load_word_list(path):
@@ -30,6 +31,9 @@ coarse_pos = {"ADJ", "ADV", "NOUN", "VERB", "ADP", "PRON", "AUX"}
 
 # Rare POS tags that make uninformative error categories
 rare_pos = {"INTJ", "NUM", "SYM", "X"}
+
+# matras in Gujarati
+matras = ['ા', 'િ', 'ી', 'ુ', 'ૂ', 'ે', 'ૈ', 'ો', 'ૌ', 'ૃ', 'ૄ', 'ૅ', 'ૉ']
 
 # Input: An Edit object
 # Output: The same Edit object with an updated error type
@@ -71,7 +75,7 @@ def get_edit_info(toks):
 
 def get_one_sided_type(toks):
     feat_list = get_edit_info(toks)
-    print(feat_list)
+    # print(feat_list)
     # if not feat_list:
     pos_list = []
     pos_list = [pos_map[f.get("pos", "NA")] for f in feat_list]
@@ -86,5 +90,100 @@ def get_one_sided_type(toks):
     else:
         return "OTHER"
 
-def get_two_sided_type(e,g):
-    return "VRU"
+def get_two_sided_type(o_toks,c_toks):
+        
+    cat = ""
+    # Orthography; i.e. whitespace errors
+    if is_only_orth_change(o_toks, c_toks): 
+        return "ORTH"
+    
+    # Word Order; only matches exact reordering.
+    if is_exact_reordering(o_toks, c_toks):
+        return "WO"
+    
+    # Spelling (A case of 1:1 replacement)
+    if len(o_toks) == len(c_toks) == 1:
+        o_tok = o_toks[0]
+        c_tok = c_toks[0]
+       
+        if is_spelling_special_case(o_tok.text, c_tok.text):
+            return "SPELL"
+
+        if o_tok.text not in vocab:
+            char_ratio = Levenshtein.ratio(o_tok.text, c_tok.text)
+            char_dist = Levenshtein.distance(o_tok.text, c_tok.text)
+
+            # Ratio > 0.5 means both correction and input share at least half the same chars.
+            # WARNING: THIS IS AN APPROXIMATION.
+            if char_ratio > 0.5 or char_dist == 1:
+                cat = "SPELL"
+                
+            # If ratio is <= 0.5, the error is more complex e.g. tolk -> say
+            else:
+                return "OTHER"
+            
+        if mismatched_are_matras_only(o_tok.text, o_tok.text):
+            cat += ":MATRA"
+            return cat
+        if mismatched_is_anusvara_only(o_tok.text, o_tok.text):
+            cat += ":ANUSVARA"
+            return cat
+        return cat
+            
+
+    # 2. MORPHOLOGY
+    # Only ADJ, ADV, NOUN and VERB can have inflectional changes.
+    # lemma_ratio = Levenshtein.ratio(o_tok.lemma, c_tok.lemma)
+    # if (lemma_ratio >= .85) 
+    if o_toks[0].lemma == c_toks[0].lemma and \
+        o_toks[0]._.feat.get("pos", "NA") in coarse_pos and \
+        c_toks[0]._.feat.get("pos", "NA") in coarse_pos:
+        
+        print(o_tok[0].lemma)
+        return "VRU" 
+
+    o_feat = get_edit_info(o_toks)
+    c_feat = get_edit_info(c_toks)
+
+    return "XYZ"
+
+def is_only_orth_change(o_toks: list, c_toks: list) -> bool:
+    o_join = "".join(o_tok.text for o_tok in o_toks)
+    c_join = "".join(c_tok.text for c_tok in c_toks)
+    if o_join == c_join:
+        return True
+    return False
+
+def is_exact_reordering(o_toks: list, c_toks: list) -> bool:
+    # Sorting lets us keep duplicates.
+    o_set = sorted(o.text for o in o_toks)
+    c_set = sorted(c.text for c in c_toks)
+    return o_set == c_set
+
+def is_spelling_special_case(o_tok: str, c_tok: str) -> bool:
+    for orig_pair in (('આ', 'યા'), ('ઇ', 'ઈ'), ('ઉ', 'ઊ'), ('ચ્', 'છ્'), ('ઘ્', 'ધ્'), ('શ્', 'ષ્')):
+        for pair in (orig_pair, orig_pair[::-1]):
+            if o_tok.endswith(pair[0]) and c_tok.endswith(pair[1]):
+                return o_tok[:-len(pair[0])] == c_tok[:-len(pair[1])]
+    return False
+
+def mismatched_are_matras_only(o_tok: str, c_tok: str) -> bool:
+    o_tok, c_tok = pad_with_spaces(o_tok, c_tok)
+    for x, y in zip(o_tok, c_tok):
+            if x != y:
+                if x not in matras or y not in matras and not (x==" " or y==" "):
+                    return False
+    return True    
+
+def mismatched_is_anusvara_only(o_tok: str, c_tok: str) -> bool:
+    o_tok, c_tok = pad_with_spaces(o_tok, c_tok)
+    for x, y in zip(o_tok, c_tok):
+            if x != y:
+                if x!=' ં' or y!=' ં'  and not (x==" " or y==" "):
+                    return False
+    return True 
+
+def pad_with_spaces(s1, s2):
+    max_len = max(len(s1), len(s2))
+    return s1.ljust(max_len), s2.ljust(max_len)
+    
