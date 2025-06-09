@@ -105,10 +105,10 @@ def get_two_sided_type(o_toks,c_toks):
     # Only ADJ, ADV, NOUN and VERB can have inflectional changes.
     # lemma_ratio = Levenshtein.ratio(o_tok.lemma, c_tok.lemma)
     # if (lemma_ratio >= .85) 
-    print(o_toks[0].lemma_, c_toks[0].lemma_)      
+    print(o_toks[0].lemma_, pos_map[o_toks[0]._.feat.get("pos", "NA")], c_toks[0].lemma_,pos_map[c_toks[0]._.feat.get("pos", "NA")])      
     if o_toks[0].lemma == c_toks[0].lemma and \
-        o_toks[0]._.feat.get("pos", "NA") in coarse_pos and \
-        c_toks[0]._.feat.get("pos", "NA") in coarse_pos:
+        pos_map[o_toks[0]._.feat.get("pos", "NA")] in coarse_pos and \
+        pos_map[c_toks[0]._.feat.get("pos", "NA")] in coarse_pos:
         print(o_toks[0].lemma_, c_toks[0].lemma_)      
         return "VRU" 
 
