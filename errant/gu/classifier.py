@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 from errant.gu.gu_nlp_pipeline import nlp_gu
 import Levenshtein
+from GujaratiStemmer import Stemmer
 
 # Load Hunspell word list for Gujarati
 def load_word_list(path):
@@ -34,6 +35,9 @@ rare_pos = {"INTJ", "NUM", "SYM", "X"}
 
 # matras in Gujarati
 matras = ['ા', 'િ', 'ી', 'ુ', 'ૂ', 'ે', 'ૈ', 'ો', 'ૌ', 'ૃ', 'ૄ', 'ૅ', 'ૉ']
+
+#stemmer for Gujarati
+stemmer = Stemmer()
 
 # Input: An Edit object
 # Output: The same Edit object with an updated error type
@@ -103,13 +107,48 @@ def get_two_sided_type(o_toks,c_toks):
 
     # MORPHOLOGY
     # Only ADJ, ADV, NOUN and VERB can have inflectional changes.
-    # lemma_ratio = Levenshtein.ratio(o_tok.lemma, c_tok.lemma)
-    # if (lemma_ratio >= .85) 
-    print(o_toks[0].lemma_, pos_map[o_toks[0]._.feat.get("pos", "NA")], c_toks[0].lemma_,pos_map[c_toks[0]._.feat.get("pos", "NA")])      
-    if o_toks[0].lemma == c_toks[0].lemma and \
+    lemma_ratio = Levenshtein.ratio(o_tok.lemma, c_tok.lemma)
+    o_pos = pos_map[o_toks[0]._.feat.get("pos", "NA")]
+    c_pos = pos_map[c_toks[0]._.feat.get("pos", "NA")]
+    o_feat = o_toks[0]._.feat
+    c_feat = c_feat[0]._.feat
+
+    print(o_toks[0].lemma_, o_feat, c_toks[0].lemma_,c_feat)      
+    
+    if (lemma_ratio >= .85) and \
         pos_map[o_toks[0]._.feat.get("pos", "NA")] in coarse_pos and \
         pos_map[c_toks[0]._.feat.get("pos", "NA")] in coarse_pos:
-        print(o_toks[0].lemma_, c_toks[0].lemma_)      
+
+    # if o_toks[0].lemma == c_toks[0].lemma and \
+    #     pos_map[o_toks[0]._.feat.get("pos", "NA")] in coarse_pos and \
+    #     pos_map[c_toks[0]._.feat.get("pos", "NA")] in coarse_pos:
+
+        if o_pos == c_pos:
+
+            if o_tok.upos in ("NOUN") and o_tok.lemma == c_tok.lemma:
+                return o_tok.upos + ":INFL"
+           
+            if o_tok.upos in ("PRON") and o_tok.lemma == c_tok.lemma:
+                if o_feat.get('number') == c_feat.get('number'):
+                    return o_tok.upos + ":INFL"
+
+            if o_tok.upos in ("ADJ", "ADP"):
+                return o_tok.upos + ":INFL"
+            
+            # Verbs - various types
+            if o_tok.upos in ("VERB", "AUX"):
+                if o_tok.xpos == c_tok.xpos:
+                    if o_feat.get('tense') == c_feat.get('tense'):
+                        return "VERB:INFL"
+                    else:
+                        return "VERB:FORM"   
+                             
+        # Derivational morphology
+        if stemmer.stem(o_tok.text) == stemmer.stem(c_tok.text) and \
+                o_pos in coarse_pos and \
+                c_pos in coarse_pos:
+            return "MORPH"  
+          
         return "VRU" 
 
     # Spelling (A case of 1:1 replacement)
@@ -128,10 +167,10 @@ def get_two_sided_type(o_toks,c_toks):
             # WARNING: THIS IS AN APPROXIMATION.
             if char_ratio > 0.5 or char_dist == 1:
               cat = "SPELL"
-              if mismatched_are_matras_only(o_tok.text, o_tok.text):
+              if mismatched_are_matras_only(o_tok.text, c_tok.text):
                 cat += ":MATRA"
                 return cat
-              if mismatched_is_anusvara_only(o_tok.text, o_tok.text):
+              if mismatched_is_anusvara_only(o_tok.text, c_tok.text):
                 cat += ":ANUSVARA"
                 return cat
             # If ratio is <= 0.5, the error is more complex e.g. tolk -> say
@@ -139,8 +178,8 @@ def get_two_sided_type(o_toks,c_toks):
                 return "OTHER"
             
 
-    o_feat = get_edit_info(o_toks)
-    c_feat = get_edit_info(c_toks)
+    # o_feat = get_edit_info(o_toks)
+    # c_feat = get_edit_info(c_toks)
 
     return "XYZ"
 
