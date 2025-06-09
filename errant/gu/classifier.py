@@ -134,6 +134,30 @@ def get_two_sided_type(o_toks,c_toks):
                 return "OTHER"
             
        
+
+         # Spelling (A case of 1:1 replacement)
+        if is_spelling_special_case(o_tok.text, c_tok.text):
+            return "SPELL"
+
+        if o_tok.text not in vocab:
+            char_ratio = Levenshtein.ratio(o_tok.text, c_tok.text)
+            char_dist = Levenshtein.distance(o_tok.text, c_tok.text)
+
+            # Ratio > 0.5 means both correction and input share at least half the same chars.
+            # WARNING: THIS IS AN APPROXIMATION.
+            if char_ratio > 0.5 or char_dist == 1:
+              cat = "SPELL"
+              if mismatched_are_matras_only(o_tok.text, c_tok.text):
+                cat += ":MATRA"
+                return cat
+              if mismatched_is_anusvara_only(o_tok.text, c_tok.text):
+                cat += ":ANUSVARA"
+                return cat
+            # If ratio is <= 0.5, the error is more complex e.g. tolk -> say
+            else:
+                return "OTHER"
+            
+       
         # MORPHOLOGY
         # Only ADJ, ADV, NOUN and VERB can have inflectional changes.
         lemma_ratio = Levenshtein.ratio(o_tok.lemma_, c_tok.lemma_)
@@ -194,6 +218,7 @@ def get_two_sided_type(o_toks,c_toks):
     if set(o_pos + c_pos).issubset({"AUX"}):
         return "VERB:TENSE"
 
+    return "OTHER"
     return "OTHER"
 
 def is_only_orth_change(o_toks: list, c_toks: list) -> bool:
