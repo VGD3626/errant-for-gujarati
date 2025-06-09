@@ -2,7 +2,7 @@ from pathlib import Path
 import json
 from errant.gu.gu_nlp_pipeline import nlp_gu
 import Levenshtein
-from GujaratiStemmer import Stemmer
+from errant.gu.GujaratiStemmer import Stemmer
 
 # Load Hunspell word list for Gujarati
 def load_word_list(path):
@@ -105,57 +105,59 @@ def get_two_sided_type(o_toks,c_toks):
     if is_exact_reordering(o_toks, c_toks):
         return "WO"
 
-    # MORPHOLOGY
-    # Only ADJ, ADV, NOUN and VERB can have inflectional changes.
-    lemma_ratio = Levenshtein.ratio(o_tok.lemma, c_tok.lemma)
-    o_pos = pos_map[o_toks[0]._.feat.get("pos", "NA")]
-    c_pos = pos_map[c_toks[0]._.feat.get("pos", "NA")]
-    o_feat = o_toks[0]._.feat
-    c_feat = c_feat[0]._.feat
 
-    print(o_toks[0].lemma_, o_feat, c_toks[0].lemma_,c_feat)      
-    
-    if (lemma_ratio >= .85) and \
-        pos_map[o_toks[0]._.feat.get("pos", "NA")] in coarse_pos and \
-        pos_map[c_toks[0]._.feat.get("pos", "NA")] in coarse_pos:
-
-    # if o_toks[0].lemma == c_toks[0].lemma and \
-    #     pos_map[o_toks[0]._.feat.get("pos", "NA")] in coarse_pos and \
-    #     pos_map[c_toks[0]._.feat.get("pos", "NA")] in coarse_pos:
-
-        if o_pos == c_pos:
-
-            if o_tok.upos in ("NOUN") and o_tok.lemma == c_tok.lemma:
-                return o_tok.upos + ":INFL"
-           
-            if o_tok.upos in ("PRON") and o_tok.lemma == c_tok.lemma:
-                if o_feat.get('number') == c_feat.get('number'):
-                    return o_tok.upos + ":INFL"
-
-            if o_tok.upos in ("ADJ", "ADP"):
-                return o_tok.upos + ":INFL"
-            
-            # Verbs - various types
-            if o_tok.upos in ("VERB", "AUX"):
-                if o_tok.xpos == c_tok.xpos:
-                    if o_feat.get('tense') == c_feat.get('tense'):
-                        return "VERB:INFL"
-                    else:
-                        return "VERB:FORM"   
-                             
-        # Derivational morphology
-        if stemmer.stem(o_tok.text) == stemmer.stem(c_tok.text) and \
-                o_pos in coarse_pos and \
-                c_pos in coarse_pos:
-            return "MORPH"  
-          
-        return "VRU" 
-
-    # Spelling (A case of 1:1 replacement)
+    # 1:1 replcement- very common
     if len(o_toks) == len(c_toks) == 1:
         o_tok = o_toks[0]
         c_tok = c_toks[0]
        
+        # MORPHOLOGY
+        # Only ADJ, ADV, NOUN and VERB can have inflectional changes.
+        lemma_ratio = Levenshtein.ratio(o_tok.lemma_, c_tok.lemma_)
+        o_pos = pos_map[o_tok._.feat.get("pos", "NA")]
+        c_pos = pos_map[c_tok._.feat.get("pos", "NA")]
+        o_feat = o_tok._.feat
+        c_feat = c_tok._.feat
+
+        print(o_toks[0].lemma_, o_feat, c_toks[0].lemma_,c_feat)      
+        
+        if (lemma_ratio >= .85) and \
+            pos_map[o_toks[0]._.feat.get("pos", "NA")] in coarse_pos and \
+            pos_map[c_toks[0]._.feat.get("pos", "NA")] in coarse_pos:
+
+        # if o_toks[0].lemma == c_toks[0].lemma and \
+        #     pos_map[o_toks[0]._.feat.get("pos", "NA")] in coarse_pos and \
+        #     pos_map[c_toks[0]._.feat.get("pos", "NA")] in coarse_pos:
+
+            if o_pos == c_pos:
+
+                if o_pos in ("NOUN") and o_tok.lemma == c_tok.lemma:
+                    return o_pos + ":INFL"
+            
+                if o_pos in ("PRON") and o_tok.lemma == c_tok.lemma:
+                    if o_feat.get('number') == c_feat.get('number'):
+                        return o_pos + ":INFL"
+
+                if o_pos in ("ADJ", "ADP"):
+                    return o_pos + ":INFL"
+                
+                # Verbs - various types
+                if o_pos in ("VERB", "AUX"):
+                    if o_pos == c_pos:
+                        if o_feat.get('tense') == c_feat.get('tense'):
+                            return "VERB:INFL"
+                        else:
+                            return "VERB:FORM"   
+                                
+            # Derivational morphology
+            if stemmer.stem(o_tok.text) == stemmer.stem(c_tok.text) and \
+                    o_pos in coarse_pos and \
+                    c_pos in coarse_pos:
+                return "MORPH"  
+            
+            return "VRU" 
+
+        # Spelling (A case of 1:1 replacement)
         if is_spelling_special_case(o_tok.text, c_tok.text):
             return "SPELL"
 

@@ -130,7 +130,7 @@ class Stemmer():
 			print("{} not present in prefixes".format(prefix))
 
 
-	def stem_word(self, sentence):
+	def stem(self, sentence):
 		word_list = sentence.strip('\u200b').split(' ')
 		if not word_list[-1]:
 			del(word_list[-1])
@@ -161,23 +161,4 @@ class Stemmer():
 			suffix_list.append(removed_suffix)
 		return_sentence = " ".join(return_list)
 		return return_sentence
-
-	def stem(self, text, corpus='prose', remove_tek=False, tek_string=None):
-		preprocessor = Preprocessor()
-		text = preprocessor.compulsory_preprocessing(text)
-		if corpus == 'poetry':
-			text = preprocessor.poetic_preprocessing(text, remove_tek=remove_tek, tek_string=tek_string)
-		elif corpus == 'prose':
-			pass
-		else:
-			raise ValueError("Unnrecognized argument 'corpus'. Should be either 'prose' or 'poetry'")
-		l = SentenceTokenizer(text)
-		if len(l)==1:
-			sentence = l[0]
-			return self.stem_word(sentence, corpus=corpus)
-		else:
-			a = []
-			for sentence in l:
-				a.append(self.stem(sentence))
-			return a
 		
