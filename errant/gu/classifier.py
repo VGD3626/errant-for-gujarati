@@ -111,6 +111,13 @@ def get_two_sided_type(o_toks,c_toks):
         o_tok = o_toks[0]
         c_tok = c_toks[0]
 
+        # These rules are carefully ordered for working with Gujarati
+
+        #Anusvara: A language-specific behavior (Gujarati)
+        print(o_tok, c_tok, mismatched_is_anusvara_only(o_tok, c_tok))
+        if mismatched_is_anusvara_only(o_tok.text, c_tok.text):
+            return "SPELL:ANUSVARA"
+
         # MORPHOLOGY
         # Only ADJ, ADV, NOUN and VERB can have inflectional changes.
         lemma_ratio = Levenshtein.ratio(o_tok.lemma_, c_tok.lemma_)
@@ -149,7 +156,7 @@ def get_two_sided_type(o_toks,c_toks):
                         else:
                             return "VERB:FORM"   
 
-           # Spelling (A case of 1:1 replacement)
+        # Spelling (A case of 1:1 replacement)
         if is_spelling_special_case(o_tok.text, c_tok.text):
             return "SPELL"
 
