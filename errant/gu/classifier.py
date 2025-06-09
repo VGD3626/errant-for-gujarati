@@ -110,6 +110,29 @@ def get_two_sided_type(o_toks,c_toks):
     if len(o_toks) == len(c_toks) == 1:
         o_tok = o_toks[0]
         c_tok = c_toks[0]
+
+         # Spelling (A case of 1:1 replacement)
+        if is_spelling_special_case(o_tok.text, c_tok.text):
+            return "SPELL"
+
+        if o_tok.text not in vocab:
+            char_ratio = Levenshtein.ratio(o_tok.text, c_tok.text)
+            char_dist = Levenshtein.distance(o_tok.text, c_tok.text)
+
+            # Ratio > 0.5 means both correction and input share at least half the same chars.
+            # WARNING: THIS IS AN APPROXIMATION.
+            if char_ratio > 0.5 or char_dist == 1:
+              cat = "SPELL"
+              if mismatched_are_matras_only(o_tok.text, c_tok.text):
+                cat += ":MATRA"
+                return cat
+              if mismatched_is_anusvara_only(o_tok.text, c_tok.text):
+                cat += ":ANUSVARA"
+                return cat
+            # If ratio is <= 0.5, the error is more complex e.g. tolk -> say
+            else:
+                return "OTHER"
+            
        
         # MORPHOLOGY
         # Only ADJ, ADV, NOUN and VERB can have inflectional changes.
@@ -157,33 +180,12 @@ def get_two_sided_type(o_toks,c_toks):
             
             return "VRU" 
 
-        # Spelling (A case of 1:1 replacement)
-        if is_spelling_special_case(o_tok.text, c_tok.text):
-            return "SPELL"
-
-        if o_tok.text not in vocab:
-            char_ratio = Levenshtein.ratio(o_tok.text, c_tok.text)
-            char_dist = Levenshtein.distance(o_tok.text, c_tok.text)
-
-            # Ratio > 0.5 means both correction and input share at least half the same chars.
-            # WARNING: THIS IS AN APPROXIMATION.
-            if char_ratio > 0.5 or char_dist == 1:
-              cat = "SPELL"
-              if mismatched_are_matras_only(o_tok.text, c_tok.text):
-                cat += ":MATRA"
-                return cat
-              if mismatched_is_anusvara_only(o_tok.text, c_tok.text):
-                cat += ":ANUSVARA"
-                return cat
-            # If ratio is <= 0.5, the error is more complex e.g. tolk -> say
-            else:
-                return "OTHER"
-            
+       
 
     # o_feat = get_edit_info(o_toks)
     # c_feat = get_edit_info(c_toks)
 
-    return "XYZ"
+    return "OTHER"
 
 def is_only_orth_change(o_toks: list, c_toks: list) -> bool:
     o_join = "".join(o_tok.text for o_tok in o_toks)
