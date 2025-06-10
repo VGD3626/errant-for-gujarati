@@ -126,6 +126,7 @@ def get_two_sided_type(o_toks,c_toks):
         o_feat = o_tok._.feat
         c_feat = c_tok._.feat
 
+        # If POS tagger is not that accurate
         if (o_pos == c_pos and o_pos in ("PUNCT")) or (o_tok.text in punctuation and c_tok.text in punctuation):
             return o_pos
         
