@@ -3,6 +3,7 @@ import json
 from errant.gu.gu_nlp_pipeline import nlp_gu
 import Levenshtein
 from errant.gu.GujaratiStemmer import Stemmer
+from string import punctuation
 
 # Load Hunspell word list for Gujarati
 def load_word_list(path):
@@ -105,7 +106,6 @@ def get_two_sided_type(o_toks,c_toks):
     if is_exact_reordering(o_toks, c_toks):
         return "WO"
 
-
     # 1:1 replcement- very common
     if len(o_toks) == len(c_toks) == 1:
         o_tok = o_toks[0]
@@ -114,7 +114,7 @@ def get_two_sided_type(o_toks,c_toks):
         # These rules are carefully ordered for working with Gujarati
 
         #Anusvara: A language-specific behavior (Gujarati)
-        print(o_tok, c_tok, mismatched_is_anusvara_only(o_tok, c_tok))
+        # print(o_tok, c_tok, mismatched_is_anusvara_only(o_tok.text, c_tok.text))
         if mismatched_is_anusvara_only(o_tok.text, c_tok.text):
             return "SPELL:ANUSVARA"
 
@@ -126,7 +126,8 @@ def get_two_sided_type(o_toks,c_toks):
         o_feat = o_tok._.feat
         c_feat = c_tok._.feat
 
-        print(o_toks[0].lemma_, o_feat, c_toks[0].lemma_,c_feat)      
+        if (o_pos == c_pos and o_pos in ("PUNCT")) or (o_tok.text in punctuation and c_tok.text in punctuation):
+            return o_pos
         
         if (lemma_ratio >= .85) and \
             pos_map[o_toks[0]._.feat.get("pos", "NA")] in coarse_pos and \
@@ -176,7 +177,7 @@ def get_two_sided_type(o_toks,c_toks):
                 return cat
             # If ratio is <= 0.5, the error is more complex e.g. tolk -> say
             # else:
-                # return "OTHER"
+              return "SPELL"
 
         # Derivational morphology
         if stemmer.stem(o_tok.text) == stemmer.stem(c_tok.text) and \
@@ -191,8 +192,6 @@ def get_two_sided_type(o_toks,c_toks):
         if o_pos == c_pos and o_pos in ("NOUN", "PUNCT", "VERB", "ADP", "ADV", "PRON", "ADJ", "CONJ", "NUM"):
             return o_pos
 
-        return "OTHER" 
-
     o_pos = [pos_map[o_tok._.feat.get("pos", "NA")] for o_tok in o_toks]
     c_pos = [pos_map[c_tok._.feat.get("pos", "NA")] for c_tok in c_toks]
 
@@ -200,7 +199,8 @@ def get_two_sided_type(o_toks,c_toks):
     if set(o_pos + c_pos).issubset({"AUX"}):
         return "VERB:TENSE"
 
-    return "OTHER"
+    c_feat, o_feat = "", ""
+    print(o_toks[0].lemma_, o_feat, c_toks[0].lemma_,c_feat)      
     return "OTHER"
 
 def is_only_orth_change(o_toks: list, c_toks: list) -> bool:
@@ -234,10 +234,10 @@ def mismatched_are_matras_only(o_tok: str, c_tok: str) -> bool:
 def mismatched_is_anusvara_only(o_tok: str, c_tok: str) -> bool:
     o_tok, c_tok = pad_with_spaces(o_tok, c_tok)
     for x, y in zip(o_tok, c_tok):
-            if x != y:
-                if x!=' ં' or y!=' ં'  and not (x==" " or y==" "):
-                    return False
-    return True 
+        if x != y:
+            if not (x == 'ં' or y == 'ં' or x == ' ' or y == ' '):
+                return False
+    return True
 
 def pad_with_spaces(s1, s2):
     max_len = max(len(s1), len(s2))
