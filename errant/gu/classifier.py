@@ -238,6 +238,10 @@ def mismatched_is_anusvara_only(o_tok: str, c_tok: str) -> bool:
             if not (x == 'ં' or y == 'ં' or x == ' ' or y == ' '):
                 return False
     return True
+        if x != y:
+            if not (x == 'ં' or y == 'ં' or x == ' ' or y == ' '):
+                return False
+    return True
 
 def pad_with_spaces(s1, s2):
     max_len = max(len(s1), len(s2))
