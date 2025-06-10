@@ -114,7 +114,7 @@ def get_two_sided_type(o_toks,c_toks):
         # These rules are carefully ordered for working with Gujarati
 
         #Anusvara: A language-specific behavior (Gujarati)
-        print(o_tok, c_tok, mismatched_is_anusvara_only(o_tok, c_tok))
+        print(o_tok, c_tok, mismatched_is_anusvara_only(o_tok.text, c_tok.text))
         if mismatched_is_anusvara_only(o_tok.text, c_tok.text):
             return "SPELL:ANUSVARA"
 
@@ -234,10 +234,10 @@ def mismatched_are_matras_only(o_tok: str, c_tok: str) -> bool:
 def mismatched_is_anusvara_only(o_tok: str, c_tok: str) -> bool:
     o_tok, c_tok = pad_with_spaces(o_tok, c_tok)
     for x, y in zip(o_tok, c_tok):
-            if x != y:
-                if x!=' ં' or y!=' ં'  and not (x==" " or y==" "):
-                    return False
-    return True 
+        if x != y:
+            if not (x == 'ં' or y == 'ં' or x == ' ' or y == ' '):
+                return False
+    return True
 
 def pad_with_spaces(s1, s2):
     max_len = max(len(s1), len(s2))
