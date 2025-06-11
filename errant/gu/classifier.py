@@ -201,7 +201,7 @@ def get_two_sided_type(o_toks,c_toks):
         return "VERB:TENSE"
 
     # c_feat, o_feat = "", ""
-    print([(o_tok.lemma_, o_tok._.feat.pos) for o_tok in o_toks], [(c_tok.lemma_,c_tok._.feat.pos) for c_tok in c_toks])      
+    print([(o_tok.lemma_, o_tok._.feat.get("pos")) for o_tok in o_toks], [(c_tok.lemma_,c_tok._.feat.get("pos")) for c_tok in c_toks])      
     return "OTHER"
 
 def is_only_orth_change(o_toks: list, c_toks: list) -> bool:
