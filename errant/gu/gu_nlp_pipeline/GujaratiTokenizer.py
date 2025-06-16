@@ -6,9 +6,10 @@ stopwords = []
 
 def GujaratiTokenizer(data, keep_stopwords = True):
         
-        data = re.sub(r'([.,\'\\"!?%#@*<>|\+\-\(\)])', r' \1 ', data)
-        data = re.sub(r"   ", '', data)
+        data = re.sub(r'([.,;:\'\\"!?%#@*<>|\+\-\(\)])', r' \1 ', data)
+        data = re.sub(r"   ", ' ', data)
         data = re.sub(r'…', " ", data)
+        data = re.sub(r"”“", r'\"', data)
         data = re.split(r'[ -]',data)
         words = []
         

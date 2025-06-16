@@ -128,9 +128,9 @@ def get_two_sided_type(o_toks,c_toks):
 
         # If POS tagger is not that accurate
         if (o_pos == c_pos and o_pos in ("PUNCT")) or (o_tok.text in punctuation and c_tok.text in punctuation):
-            return o_pos
+            return "PUNCT"
         
-        if (lemma_ratio >= .85) and \
+        if (lemma_ratio >= .75) and \
             pos_map[o_toks[0]._.feat.get("pos", "NA")] in coarse_pos and \
             pos_map[c_toks[0]._.feat.get("pos", "NA")] in coarse_pos:
 
@@ -155,8 +155,8 @@ def get_two_sided_type(o_toks,c_toks):
                     if o_pos == c_pos:
                         if o_feat.get('tense') == c_feat.get('tense'):
                             return "VERB:INFL"
-                        else:
-                            return "VERB:FORM"   
+                        elif o_feat.get('tense') != c_feat.get('tense'):
+                            return "VERB:TENSE"
 
         # Spelling (A case of 1:1 replacement)
         if is_spelling_special_case(o_tok.text, c_tok.text):
@@ -236,9 +236,9 @@ def mismatched_is_anusvara_only(o_tok: str, c_tok: str) -> bool:
     o_tok, c_tok = pad_with_spaces(o_tok, c_tok)
     for x, y in zip(o_tok, c_tok):
         if x != y:
-            if not (x == 'ં' or y == 'ં' or x == ' ' or y == ' '):
-                return False
-    return True
+            if x == 'ં' or y == 'ં':
+                return True
+    return False
     
 def pad_with_spaces(s1, s2):
     max_len = max(len(s1), len(s2))
