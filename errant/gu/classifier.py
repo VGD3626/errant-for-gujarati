@@ -110,12 +110,15 @@ def get_two_sided_type(o_toks,c_toks):
     if len(o_toks) == len(c_toks) == 1:
         o_tok = o_toks[0]
         c_tok = c_toks[0]
+        char_ratio = Levenshtein.ratio(o_tok.text, c_tok.text)
+        char_dist = Levenshtein.distance(o_tok.text, c_tok.text)
+
 
         # These rules are carefully ordered for working with Gujarati
 
         #Anusvara: A language-specific behavior (Gujarati)
         # print(o_tok, c_tok, mismatched_is_anusvara_only(o_tok.text, c_tok.text))
-        if mismatched_is_anusvara_only(o_tok.text, c_tok.text):
+        if char_dist == 1 and mismatched_is_anusvara_only(o_tok.text, c_tok.text):
             return "SPELL:ANUSVARA"
 
         # MORPHOLOGY
@@ -128,9 +131,9 @@ def get_two_sided_type(o_toks,c_toks):
 
         # If POS tagger is not that accurate
         if (o_pos == c_pos and o_pos in ("PUNCT")) or (o_tok.text in punctuation and c_tok.text in punctuation):
-            return o_pos
+            return "PUNCT"
         
-        if (lemma_ratio >= .85) and \
+        if (lemma_ratio >= .75) and \
             pos_map[o_toks[0]._.feat.get("pos", "NA")] in coarse_pos and \
             pos_map[c_toks[0]._.feat.get("pos", "NA")] in coarse_pos:
 
@@ -155,26 +158,21 @@ def get_two_sided_type(o_toks,c_toks):
                     if o_pos == c_pos:
                         if o_feat.get('tense') == c_feat.get('tense'):
                             return "VERB:INFL"
-                        else:
-                            return "VERB:FORM"   
+                        elif o_feat.get('tense') != c_feat.get('tense'):
+                            return "VERB:TENSE"
 
         # Spelling (A case of 1:1 replacement)
         if is_spelling_special_case(o_tok.text, c_tok.text):
             return "SPELL"
 
         if o_tok.text not in vocab:
-            char_ratio = Levenshtein.ratio(o_tok.text, c_tok.text)
-            char_dist = Levenshtein.distance(o_tok.text, c_tok.text)
-
+        
             # Ratio > 0.5 means both correction and input share at least half the same chars.
             # WARNING: THIS IS AN APPROXIMATION.
             if char_ratio > 0.5 or char_dist == 1:
               cat = "SPELL"
               if mismatched_are_matras_only(o_tok.text, c_tok.text):
                 cat += ":MATRA"
-                return cat
-              if mismatched_is_anusvara_only(o_tok.text, c_tok.text):
-                cat += ":ANUSVARA"
                 return cat
             # If ratio is <= 0.5, the error is more complex e.g. tolk -> say
             # else:
@@ -234,11 +232,17 @@ def mismatched_are_matras_only(o_tok: str, c_tok: str) -> bool:
 
 def mismatched_is_anusvara_only(o_tok: str, c_tok: str) -> bool:
     o_tok, c_tok = pad_with_spaces(o_tok, c_tok)
+    f = False
     for x, y in zip(o_tok, c_tok):
         if x != y:
-            if not (x == 'ં' or y == 'ં' or x == ' ' or y == ' '):
-                return False
-    return True
+            if x == 'ં' or y == 'ં':
+                f = True
+            elif x==' ' or y == ' ' and (x == 'ં' or y == 'ં'):
+                f = True
+            else:
+                f = False 
+                return
+    return f
     
 def pad_with_spaces(s1, s2):
     max_len = max(len(s1), len(s2))
