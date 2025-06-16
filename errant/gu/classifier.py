@@ -110,12 +110,15 @@ def get_two_sided_type(o_toks,c_toks):
     if len(o_toks) == len(c_toks) == 1:
         o_tok = o_toks[0]
         c_tok = c_toks[0]
+        char_ratio = Levenshtein.ratio(o_tok.text, c_tok.text)
+        char_dist = Levenshtein.distance(o_tok.text, c_tok.text)
+
 
         # These rules are carefully ordered for working with Gujarati
 
         #Anusvara: A language-specific behavior (Gujarati)
         # print(o_tok, c_tok, mismatched_is_anusvara_only(o_tok.text, c_tok.text))
-        if mismatched_is_anusvara_only(o_tok.text, c_tok.text):
+        if char_dist == 1 and mismatched_is_anusvara_only(o_tok.text, c_tok.text):
             return "SPELL:ANUSVARA"
 
         # MORPHOLOGY
@@ -163,18 +166,13 @@ def get_two_sided_type(o_toks,c_toks):
             return "SPELL"
 
         if o_tok.text not in vocab:
-            char_ratio = Levenshtein.ratio(o_tok.text, c_tok.text)
-            char_dist = Levenshtein.distance(o_tok.text, c_tok.text)
-
+        
             # Ratio > 0.5 means both correction and input share at least half the same chars.
             # WARNING: THIS IS AN APPROXIMATION.
             if char_ratio > 0.5 or char_dist == 1:
               cat = "SPELL"
               if mismatched_are_matras_only(o_tok.text, c_tok.text):
                 cat += ":MATRA"
-                return cat
-              if mismatched_is_anusvara_only(o_tok.text, c_tok.text):
-                cat += ":ANUSVARA"
                 return cat
             # If ratio is <= 0.5, the error is more complex e.g. tolk -> say
             # else:
@@ -234,11 +232,17 @@ def mismatched_are_matras_only(o_tok: str, c_tok: str) -> bool:
 
 def mismatched_is_anusvara_only(o_tok: str, c_tok: str) -> bool:
     o_tok, c_tok = pad_with_spaces(o_tok, c_tok)
+    f = False
     for x, y in zip(o_tok, c_tok):
         if x != y:
             if x == 'ં' or y == 'ં':
-                return True
-    return False
+                f = True
+            elif x==' ' or y == ' ' and (x == 'ં' or y == 'ં'):
+                f = True
+            else:
+                f = False 
+                return
+    return f
     
 def pad_with_spaces(s1, s2):
     max_len = max(len(s1), len(s2))
