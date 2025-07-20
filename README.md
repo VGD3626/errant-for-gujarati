@@ -1,11 +1,48 @@
-# ERRANT for Gujarati 
-**Part of**: *Smruti: Grammatical Error Correction for Gujarati using LLMs with Non-Parametric Memory*
+# ERRANT for Gujarati (Adapted from ERRANT v3.0.0)
 
-## Overview
+This repository provides an adaptation of the [ERRANT](https://github.com/chrisjbryant/errant) (ERRor ANnotation Toolkit) framework for **Gujarati grammatical error correction (GEC)**. It supports automatic extraction and classification of edits between original and corrected Gujarati sentences.
 
-This repository provides a Gujarati-specific adaptation of the ERRANT framework (Bryant et al., 2017) for grammatical error correction (GEC). While the original ERRANT toolkit was developed for English, this version extends its applicability to Gujarati—a morphologically rich, low-resource Indic language.
-The adapted framework is employed to evaluate the *Smruti* system across both human-annotated and synthetically generated datasets. It facilitates interpretable, reproducible performance measurement for GEC in Gujarati.
+This adaptation is part of **Smruti: Grammatical Error Correction for Gujarati using LLMs with Non-Parametric Memory**.
 
-## Acknowledgments
+---
 
-We thank the original authors of ERRANT for their foundational work and open-source release.
+## Example
+
+Example: Gender Agreement Error in Verb (Gujarati)
+
+Original (Incorrect) Sentence:
+તે બાળા ખૂબ તેજસ્વી હતો .
+
+Corrected Sentence:
+તે બાળા ખૂબ તેજસ્વી હતી .
+
+Output:
+S તે બાળા ખૂબ તેજસ્વી હતો .
+A 4 5|||R:VERB:INFL|||હતી|||REQUIRED|||-NONE-|||0
+
+---
+
+## Usage
+
+For usage examples, setup instructions, and evaluation tools, refer to the original ERRANT repository:
+
+🔗 [Original ERRANT GitHub Repository](https://github.com/chrisjbryant/errant)
+
+The Gujarati version follows the same structure and usage pattern, adapted for Gujarati language support.
+
+---
+
+## References
+
+This toolkit builds on:
+
+- Bryant, C., Felice, M., & Briscoe, T. (2017). *Automatic annotation and evaluation of error types for grammatical error correction*. ACL 2017.  
+- Felice, M., Bryant, C., & Briscoe, T. (2016). *Automatic extraction of learner errors in ESL sentences using linguistically enhanced alignments*. COLING 2016.
+
+---
+
+## License
+
+This project inherits the original ERRANT license. See the `LICENSE` file for more details.
+
+---
