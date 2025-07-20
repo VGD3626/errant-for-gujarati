@@ -18,6 +18,7 @@ Corrected Sentence:
 
 Output:
 S તે બાળા ખૂબ તેજસ્વી હતો .
+
 A 4 5|||R:VERB:INFL|||હતી|||REQUIRED|||-NONE-|||0
 
 ---
