@@ -8,4 +8,4 @@ The adapted framework is employed to evaluate the *Smruti* system across both hu
 
 ## Acknowledgments
 
-We thank the original authors of ERRANT for their foundational work and open-source release. This adaptation was developed using native linguistic insights to support GEC research in Gujarati and other under-resourced Indian languages.
+We thank the original authors of ERRANT for their foundational work and open-source release.
