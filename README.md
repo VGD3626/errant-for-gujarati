@@ -8,7 +8,7 @@ This work is part of **Smruti: Grammatical Error Correction for Gujarati using L
 
 ## Example
 
-Example: Gender Agreement Error in Verb (Gujarati)
+Example:
 
 Original (Incorrect) Sentence:
 તે બાળા ખૂબ તેજસ્વી હતો .
