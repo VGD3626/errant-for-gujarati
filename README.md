@@ -1,8 +1,8 @@
-# ERRANT for Gujarati (Adapted from ERRANT v3.0.0)
+# ERRANT for Gujarati
 
 This repository provides an adaptation of the [ERRANT](https://github.com/chrisjbryant/errant) (ERRor ANnotation Toolkit) framework for **Gujarati grammatical error correction (GEC)**. It supports automatic extraction and classification of edits between original and corrected Gujarati sentences.
 
-This adaptation is part of **Smruti: Grammatical Error Correction for Gujarati using LLMs with Non-Parametric Memory**.
+This work is part of **Smruti: Grammatical Error Correction for Gujarati using LLMs with Non-Parametric Memory**.
 
 ---
 
